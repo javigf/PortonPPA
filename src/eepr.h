@@ -1,9 +1,20 @@
+/*
+ * EEPROM Manipulation File
+ * ADDR = 0
+ * ADDR = 1
+ * ADDR = 2
+ * ADDR = 3 RF Control count
+ */
+
+
+
 bool system_configured = 0;
 unsigned int memory_position = 0;
 
 //This function will write a 4 byte (32bit) long to the eeprom at
 //the specified address to address + 3.
-int EEPROMWritelong(unsigned int address, long value) {
+
+int EEPROMWritelong (unsigned int address, long value) {
         //Decomposition from a long to 4 bytes by using bitshift.
         //One = Most significant -> Four = Least significant byte
         byte four = (value & 0xFF);
@@ -19,10 +30,10 @@ int EEPROMWritelong(unsigned int address, long value) {
 
         return 0;
 }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //This function will return a 4 byte (32bit) long from the eeprom
 //at the specified address to address + 3.
-long EEPROMReadlong(long address) {
+long EEPROMReadlong (long address) {
         //Read the 4 bytes from the eeprom memory.
         long four = EEPROM.read(address);
         long three = EEPROM.read(address + 1);
@@ -37,6 +48,7 @@ long EEPROMReadlong(long address) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EEPROM pos = 0
 // 0xAA MEANS EEPROM initialized
+// TODO REVIEW POSITION IS NOT CORRECT -> DONE ON PURPOSE FOR TESTING
 int first_time_run (void){
         unsigned int EEPROM_end_address = 0;
 
@@ -44,12 +56,12 @@ int first_time_run (void){
         if ((EEPROM.read(0)) != 0xAA) {
                 for (unsigned int i = 0; i < EEPROM_end_address; i++)
                         EEPROM.write(i, 0);
-                EEPROM.write((EEPROM_end_address -1), 0xAA);
+                EEPROM.write((EEPROM_end_address - 1), 0xAA);
                 Serial.println ("EEPROM Clear");
         }
         return 0;
 }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EEPROM pos = 2
 // Check for system configured
 int check_configuration (void){
@@ -59,7 +71,7 @@ int check_configuration (void){
 
         return 0;
 }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EEPROM pos = 3
 // Check Controls saved
 unsigned int count_controls_in_EEPROM (void){
@@ -70,8 +82,9 @@ unsigned int count_controls_in_EEPROM (void){
         return control_count;
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Check Controls saved
+// EEPROM pos = 3
 unsigned int add_controls_to_EEPROM (void){
         unsigned int control_count = 0;
 
@@ -81,18 +94,40 @@ unsigned int add_controls_to_EEPROM (void){
         return control_count;
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Controls should be added in memory address multiplo of 4/8/12/16/20 etc
-int add_control (void){
+bool check_existing_control (unsigned long rf_addr){
+        bool status = 0;
+        unsigned int i = 0, controls;
+        
+        controls = count_controls_in_EEPROM ();                
+        if (system_configured && ((controls > 0) && (controls <= MAX_CONTROLS))) {
+                
+             do
+                {
+                    if (rf_addr == EEPROMReadlong (i*4))
+                        status = 1;
+                    ++i;
+
+                } while (!status && (i <= MAX_CONTROLS));   
+
+                
+        }
+
+        return status;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Controls should be added in memory address multiplo of 4/8/12/16/20 etc
+int add_control (unsigned long addr){
         unsigned int controls = 0;
 
         if (system_configured) {
                 controls = count_controls_in_EEPROM ();
 
-                if (controls <= MAX_CONTROLS) {
-                        if (!controls)
-                                controls = 1;
-                        EEPROMWritelong ((4 * (controls)), rfControl_1.addr);
+                if (controls < MAX_CONTROLS) {
+                    EEPROMWritelong ((4 * (controls++)), addr);
+                    add_controls_to_EEPROM ();
                 }
         }
 

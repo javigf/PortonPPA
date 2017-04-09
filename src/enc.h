@@ -8,15 +8,17 @@
 Encoder myEnc(2, 3);
 //   avoid using pins with LEDs attached
 
-long oldPosition  = -999;
+long newPosition, oldPosition = -999;
 
 long encoder_status (void) {
 
-        static long newPosition = myEnc.read();
-        //Serial.println(newPosition);
+        newPosition = myEnc.read();
+
         if (newPosition != oldPosition) {
                 oldPosition = newPosition;
+#ifdef DEBUG                
                 Serial.println(newPosition);
+#endif
                 return newPosition;
         }
 

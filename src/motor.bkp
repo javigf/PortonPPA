@@ -1,57 +1,49 @@
-#define triac 5                 //PIN ASSIGNED TO TRIAC
-#define rele1 6                 //PIN ASSIGNED TO RELE1
-#define rele2 7                 //PIN ASSIGNED TO RELE2
+#define triac 5
+#define rele1 6
+#define rele2 7
 
 int motor_max_position = 0;
 int motor_min_position = 0;
-bool motor_status =  0;        //MOTOR STOPPED = 0 OR MOVING = 1
 
-// TODO SAVE VALUES IN EEPROM - PROBABLY NOT NEEDED
-// DEFINE BEST TRIAC VALUES
-// EVALUATE IMPROVEMENT IN LOOP FOR TRIAC OPERATION
+// TODO SAVE VALUES IN EEPROM
 
 int activate_triac (void){
-        digitalWrite (triac, HIGH);
-        delayMicroseconds (10);
-        digitalWrite (triac, LOW);
-        delayMicroseconds (90);
+    digitalWrite (triac, HIGH);
+    delayMicroseconds (100);
+    digitalWrite (triac, LOW);
+    delayMicroseconds (100);
 
-        return 0;
+  return 0;
 }
 
 int stop_motor (void){
-        motor_status = 0;
         digitalWrite (triac, LOW);
         digitalWrite (rele1, LOW);
         digitalWrite (rele2, LOW);
-        
+
         return 0;
 }
 
 int move_motor_forward (void){
-        motor_status = 1;
+      activate_triac ();
         digitalWrite (rele1, LOW);
         digitalWrite (rele2, HIGH);
-        
-        activate_triac ();
 
         return 0;
 }
 
 int move_motor_backward (void){
-        motor_status = 1;
+        activate_triac ();
         digitalWrite (rele1, HIGH);
         digitalWrite (rele2, LOW);
 
-        activate_triac ();
-        
         return 0;
 }
 
 int move_motor_forward (long position){
         delay (1000);
         long enc_value = myEnc.read ();
-        while (position < enc_value) {
+        while (position < enc_value){
                 move_motor_forward ();
                 enc_value = myEnc.read ();
                 Serial.println (enc_value);
@@ -63,14 +55,8 @@ int move_motor_forward (long position){
 
 int move_motor_backward (long position){
         delay (1000);
-        long enc_value = myEnc.read ();
-        while (position > enc_value) {
-                move_motor_forward ();
-                enc_value = myEnc.read ();
-                Serial.println (enc_value);
-        }
-        stop_motor ();
-
+        while (position < myEnc.read())
+                move_motor_backward();
         return 0;
 }
 

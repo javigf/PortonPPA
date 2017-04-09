@@ -1,14 +1,32 @@
-
-
 #include <EEPROM.h>
 #include "RF.h"
 #include "enc.h"
 #include "eepr.h"
 #include "motor.h"
 
+#define INTERVAL_VALUE 200
+
+unsigned int blink_times = 5;
+bool check_pgm_enable = 0;
+
+// Variables will change :
+//bool ledState = LOW;             // ledState used to set the LED
+
+// Generally, you should use "unsigned long" for variables that hold time
+// The value will quickly become too large for an int to store
+unsigned long previousMillis = 0;        // will store last time LED was updated
+
+// constants won't change :
+unsigned long interval = INTERVAL_VALUE;           // interval at which to blink (milliseconds)
+
+
+// WHEN PROGRAMMING MODE & RF CONTROL ADDED BLINK 2 TIMES
 bool programming_mode = 0;
 
-#define led 8
+// WHEN NO RF CONTROL BLINK 3 TIMES
+unsigned int led_blink_count = 0;
+
+#define led A0
 
 int init_pins (void){
 
@@ -25,32 +43,43 @@ int init_pins (void){
 }
 
 int check_programming_mode (void){
-        static unsigned int counter = 0;
-        unsigned int val = 0;
-        pinMode(led,INPUT);
+    unsigned int value;
+        
+    if (check_pgm_enable){
+        pinMode (led,INPUT);
+        value = analogRead (led);
+            
+        if  (value > 100)
+            programming_mode = 1;
+        else
+            programming_mode = 0;
+        }      
 
-        val = analogRead(led);
-
-        if (val > 100)
-                counter++;
-
-        if ((counter > 50) && (val > 100)) {
-                programming_mode = 1;
-                if (counter > 0xFFF0)
-                        counter = 50;
-        }
-        else{
-                programming_mode = 0;
-                counter = 0;
-        }
-
-        return 0;
+    Serial.println (value);
+               
+    return 0;
 }
 
 int blink (void){
-        int state = digitalRead (led);
-        digitalWrite (led,!state);
-        delay (300);
+        
+        led_blink_count++;
+        
+        if (led_blink_count > blink_times){
+            led_blink_count = 0;
+            interval = INTERVAL_VALUE * 10;
+            check_pgm_enable = 1;
+        }
+        else{
+            interval = INTERVAL_VALUE;
+            pinMode (led,OUTPUT);
+            check_pgm_enable = 0;
+            int state = digitalRead (led);
+            digitalWrite (led,!state);
+        }
 
+
+        
         return 0;
 }
+
+

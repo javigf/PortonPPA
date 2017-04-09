@@ -1,11 +1,11 @@
-#define MAX_CONTROLS 10
-const int pinRF = 4;  // Pin where RF Module is connected. If necessary, change this for your project
-const int programRF = 9;
+#define MAX_CONTROLS    10
+const int pinRF         = 4;  // Pin where RF Module is connected. If necessary, change this for your project
+const int programRF     = 9;
 
 int lambda;      // on pulse clock width (if fosc = 2KHz than lambda = 500 us)
 
-struct rfControl        //Struct for RF Remote Controls
-{
+struct rfControl {        //Struct for RF Remote Controls
+
         unsigned long addr ; //ADDRESS CODE
         bool btn1;   //BUTTON 1
         bool btn2;   //BUTTON 2
