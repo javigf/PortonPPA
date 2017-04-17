@@ -6,6 +6,8 @@
  * ADDR = 3 RF Control count
  */
 
+#define CTRL1 1
+#define CTRL2 2
 
 
 bool system_configured = 0;
@@ -33,7 +35,7 @@ int EEPROMWritelong (unsigned int address, long value) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //This function will return a 4 byte (32bit) long from the eeprom
 //at the specified address to address + 3.
-long EEPROMReadlong (long address) {
+unsigned long EEPROMReadlong ( unsigned long address) {
         //Read the 4 bytes from the eeprom memory.
         long four = EEPROM.read(address);
         long three = EEPROM.read(address + 1);
@@ -98,35 +100,34 @@ unsigned int add_controls_to_EEPROM (void){
 // Controls should be added in memory address multiplo of 4/8/12/16/20 etc
 bool check_existing_control (unsigned long rf_addr){
         bool status = 0;
-        unsigned int i = 0, controls;
+        //unsigned int i = 0, controls;
         
-        controls = count_controls_in_EEPROM ();                
+        /*controls = count_controls_in_EEPROM ();                
         if (system_configured && ((controls > 0) && (controls <= MAX_CONTROLS))) {
                 
-             do
-                {
-                    if (rf_addr == EEPROMReadlong (i*4))
-                        status = 1;
-                    ++i;
+            do {
+                if (rf_addr == EEPROMReadlong (i*4))
+                    status = 1;
+                ++i;
+                } while (!status && (i <= MAX_CONTROLS));
+        }*/
 
-                } while (!status && (i <= MAX_CONTROLS));   
-
-                
-        }
+        if ((rf_addr == CTRL1) || (rf_addr == CTRL2))
+            status = 1;
 
         return status;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Controls should be added in memory address multiplo of 4/8/12/16/20 etc
-int add_control (unsigned long addr){
+int add_control (unsigned long rf_addr){
         unsigned int controls = 0;
-
-        if (system_configured) {
+        
+        if (system_configured && (!(check_existing_control (0)))) { //TODO VER 
                 controls = count_controls_in_EEPROM ();
 
                 if (controls < MAX_CONTROLS) {
-                    EEPROMWritelong ((4 * (controls++)), addr);
+                    EEPROMWritelong ((4 * (controls++)), rf_addr);
                     add_controls_to_EEPROM ();
                 }
         }

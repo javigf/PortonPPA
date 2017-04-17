@@ -17,8 +17,8 @@ bool check_pgm_enable = 0;
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
 // constants won't change :
-unsigned long interval = INTERVAL_VALUE;           // interval at which to blink (milliseconds)
-
+unsigned long interval = 100;           // interval at which to blink (milliseconds)
+unsigned long interval_blink = INTERVAL_VALUE;
 
 // WHEN PROGRAMMING MODE & RF CONTROL ADDED BLINK 2 TIMES
 bool programming_mode = 0;
@@ -56,28 +56,32 @@ int check_programming_mode (void){
         }      
 
     Serial.println (value);
-               
     return 0;
 }
 
 int blink (void){
         
+static unsigned long last_blink_time = 0;
+
+if(millis() - last_blink_time >= interval_blink) {
+
         led_blink_count++;
         
         if (led_blink_count > blink_times){
             led_blink_count = 0;
-            interval = INTERVAL_VALUE * 10;
+            interval_blink = INTERVAL_VALUE * 10;
             check_pgm_enable = 1;
         }
         else{
-            interval = INTERVAL_VALUE;
+            interval_blink = INTERVAL_VALUE;
             pinMode (led,OUTPUT);
             check_pgm_enable = 0;
             int state = digitalRead (led);
             digitalWrite (led,!state);
         }
 
-
+    last_blink_time += interval_blink ; 
+}
         
         return 0;
 }

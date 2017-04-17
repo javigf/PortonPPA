@@ -9,6 +9,7 @@ struct rfControl {        //Struct for RF Remote Controls
         unsigned long addr ; //ADDRESS CODE
         bool btn1;   //BUTTON 1
         bool btn2;   //BUTTON 2
+        bool btn3;   //BUTTON 3 > NOT ALL CONTROLS HAS 3 BUTTONS 
 };
 
 struct rfControl rfControl_1;    //Set variable rfControl_1 as rfControl type

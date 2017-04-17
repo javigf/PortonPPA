@@ -2,25 +2,26 @@
 #define rele1 6                 //PIN ASSIGNED TO RELE1
 #define rele2 7                 //PIN ASSIGNED TO RELE2
 
-int motor_max_position = 0;
-int motor_min_position = 0;
-bool motor_status =  0;        //MOTOR STOPPED = 0 OR MOVING = 1
+unsigned int torque             = 90;     //TORQUE FOR MOTOR 1-100 VALUE
+int motor_max_position          = 0;
+int motor_min_position          = 0;
+bool motor_status               = 0;      //MOTOR STOPPED = 0 OR MOVING MOVING = 1 
+bool motor_direction            = 0;      //MOTOR OPEN = 0 OR MOVING CLOSING = 1 
 
 // TODO SAVE VALUES IN EEPROM - PROBABLY NOT NEEDED
 // DEFINE BEST TRIAC VALUES
-// EVALUATE IMPROVEMENT IN LOOP FOR TRIAC OPERATION
+// EVALUATE IMPROVEMENT IN LOOP FOR TRIAC OPERATION - TORQUE
 
 int activate_triac (void){
-        digitalWrite (triac, HIGH);
-        delayMicroseconds (10);
         digitalWrite (triac, LOW);
-        delayMicroseconds (90);
+        delayMicroseconds (100 - torque);
+        digitalWrite (triac, HIGH);
+        delayMicroseconds (torque);
 
         return 0;
 }
 
 int stop_motor (void){
-        motor_status = 0;
         digitalWrite (triac, LOW);
         digitalWrite (rele1, LOW);
         digitalWrite (rele2, LOW);
@@ -29,7 +30,6 @@ int stop_motor (void){
 }
 
 int move_motor_forward (void){
-        motor_status = 1;
         digitalWrite (rele1, LOW);
         digitalWrite (rele2, HIGH);
         
@@ -39,7 +39,6 @@ int move_motor_forward (void){
 }
 
 int move_motor_backward (void){
-        motor_status = 1;
         digitalWrite (rele1, HIGH);
         digitalWrite (rele2, LOW);
 
